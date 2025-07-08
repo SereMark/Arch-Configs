@@ -264,3 +264,7 @@ bindsym $mod+Shift+Tab workspace prev
 # Quick workspace switching
 bindsym $mod+Ctrl+Right workspace next
 bindsym $mod+Ctrl+Left workspace prev
+
+# --- Autostart Maintenance Script ---
+# Run system updates and config backups in the background on startup.
+exec --no-startup-id "$HOME/startup_maintenance.sh"
