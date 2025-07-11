@@ -267,4 +267,4 @@ bindsym $mod+Ctrl+Left workspace prev
 
 # --- Autostart Maintenance Script ---
 # Run system updates and config backups in the background on startup.
-exec --no-startup-id "$HOME/startup_maintenance.sh"
+exec --no-startup-id "$HOME/.config/i3/startup_maintenance.sh"
