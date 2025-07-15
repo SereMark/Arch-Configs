@@ -1,0 +1,16 @@
+[font]
+normal.family = "JetBrainsMono Nerd Font"
+normal.style = "Regular"
+bold.family = "JetBrainsMono Nerd Font"
+bold.style = "Bold"
+italic.family = "JetBrainsMono Nerd Font"
+italic.style = "Italic"
+size = 12
+
+[window]
+padding.x = 5
+padding.y = 5
+decorations = "Full"
+
+[env]
+TERM = "xterm-256color"
