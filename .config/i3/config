@@ -1,10 +1,6 @@
 # Modifier key (Super/Windows key)
 set $mod Mod4
 
-# ====================================================================
-# 🎨 VISUAL APPEARANCE
-# ====================================================================
-
 # Font
 font pango:monospace 10
 
@@ -35,10 +31,6 @@ client.urgent             $urgent-bg-color  $urgent-bg-color    $text-color     
 client.placeholder        $inactive-bg-color $inactive-bg-color $inactive-text-color $indicator-color    $inactive-bg-color
 client.background         $bg-color
 
-# ====================================================================
-# ⚡ BEHAVIOR SETTINGS
-# ====================================================================
-
 # Clean workflow enhancements
 focus_follows_mouse yes
 mouse_warping none
@@ -49,16 +41,8 @@ floating_modifier $mod
 popup_during_fullscreen smart
 force_display_urgency_hint 1000 ms
 
-# ====================================================================
-# 🚀 STARTUP APPLICATIONS
-# ====================================================================
-
 # Auto-start browser
 exec --no-startup-id sh -c "timeout 10s bash -c 'until ping -c 1 1.1.1.1 >/dev/null 2>&1; do sleep 1; done' && exec firefox"
-
-# ====================================================================
-# ⌨️  KEYBINDINGS - Core Applications
-# ====================================================================
 
 # Launch Firefox Browser
 bindsym $mod+b exec firefox
@@ -69,49 +53,24 @@ bindsym $mod+Return exec alacritty
 # Kill focused window
 bindsym $mod+Shift+q kill
 
-# 🚀 CODING MODE - Sets up development environment
+# CODING MODE - Sets up development environment
 bindsym $mod+c exec --no-startup-id ~/.config/i3/coding-mode.sh
-
-# ====================================================================
-# 🔊 AUDIO CONTROLS
-# ====================================================================
 
 bindsym XF86AudioRaiseVolume exec --no-startup-id wpctl set-volume @DEFAULT_SINK@ 5%+
 bindsym XF86AudioLowerVolume exec --no-startup-id wpctl set-volume @DEFAULT_SINK@ 5%-
 bindsym XF86AudioMute exec --no-startup-id wpctl set-mute @DEFAULT_SINK@ toggle
-bindsym XF86AudioMicMute exec --no-startup-id wpctl set-mute @DEFAULT_SOURCE@ toggle
 
-# ====================================================================
-# 🧭 WINDOW NAVIGATION
-# ====================================================================
-
-# Focus controls (HJKL-style)
+# Focus controls
 bindsym $mod+j focus left
 bindsym $mod+k focus down
 bindsym $mod+l focus up
 bindsym $mod+semicolon focus right
-
-# Alternative arrow key navigation
-bindsym $mod+Left focus left
-bindsym $mod+Down focus down
-bindsym $mod+Up focus up
-bindsym $mod+Right focus right
 
 # Move windows
 bindsym $mod+Shift+j move left
 bindsym $mod+Shift+k move down
 bindsym $mod+Shift+l move up
 bindsym $mod+Shift+semicolon move right
-
-# Alternative arrow key moving
-bindsym $mod+Shift+Left move left
-bindsym $mod+Shift+Down move down
-bindsym $mod+Shift+Up move up
-bindsym $mod+Shift+Right move right
-
-# ====================================================================
-# 📐 LAYOUT CONTROLS
-# ====================================================================
 
 # Split containers
 bindsym $mod+h split h
@@ -132,10 +91,6 @@ bindsym $mod+space focus mode_toggle
 
 # Focus the parent container
 bindsym $mod+a focus parent
-
-# ====================================================================
-# 🏢 WORKSPACE MANAGEMENT
-# ====================================================================
 
 # Define workspace names
 set $ws1 "1"
@@ -185,34 +140,24 @@ bindsym $mod+Ctrl+8 move container to workspace $ws8; workspace $ws8
 bindsym $mod+Ctrl+9 move container to workspace $ws9; workspace $ws9
 bindsym $mod+Ctrl+0 move container to workspace $ws10; workspace $ws10
 
-# ====================================================================
-# ⚙️  SYSTEM CONTROLS
-# ====================================================================
-
 # Reload/restart i3
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+r restart
 
-# Exit i3 with enhanced dialog
+# Exit i3
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'Exit i3 and end X session?' -B 'Yes, exit i3' 'i3-msg exit' -f 'pango:monospace 10'"
 
-# ====================================================================
-# 📏 RESIZE MODE
-# ====================================================================
+# System power controls
+bindsym $mod+Shift+p exec "sudo shutdown -h now"
+bindsym $mod+Shift+b exec "sudo reboot"
 
 bindsym $mod+r mode "resize"
 mode "resize" {
-    # Resize with HJKL
+    # Resize
     bindsym j resize shrink width 5 px or 5 ppt
     bindsym k resize grow height 5 px or 5 ppt
     bindsym l resize shrink height 5 px or 5 ppt
     bindsym semicolon resize grow width 5 px or 5 ppt
-
-    # Resize with arrow keys
-    bindsym Left resize shrink width 5 px or 5 ppt
-    bindsym Down resize grow height 5 px or 5 ppt
-    bindsym Up resize shrink height 5 px or 5 ppt
-    bindsym Right resize grow width 5 px or 5 ppt
 
     # Fast resize (Shift for 10px)
     bindsym Shift+j resize shrink width 10 px or 10 ppt
@@ -232,10 +177,6 @@ mode "resize" {
     bindsym $mod+r mode "default"
 }
 
-# ====================================================================
-# 🎯 WINDOW RULES
-# ====================================================================
-
 # Smart borders - no borders when only one window
 smart_borders on
 
@@ -245,10 +186,6 @@ for_window [class=".*"] border pixel 2
 # Floating windows
 for_window [window_role="pop-up"] floating enable
 for_window [window_role="task_dialog"] floating enable
-
-# ====================================================================
-# 💡 ADDITIONAL ENHANCEMENTS
-# ====================================================================
 
 # Scratchpad
 bindsym $mod+Shift+minus move scratchpad
@@ -262,6 +199,5 @@ bindsym $mod+Shift+Tab workspace prev
 bindsym $mod+Ctrl+Right workspace next
 bindsym $mod+Ctrl+Left workspace prev
 
-# --- Autostart Backup Script ---
 # Run config backups in the background on startup.
 exec --no-startup-id "$HOME/.config/i3/backup.sh"

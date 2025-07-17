@@ -1,13 +1,10 @@
 #
-# ~/.bashrc - Upgraded for better UX
+# ~/.bashrc
 #
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-# ========================================
-# HISTORY CONFIGURATION
-# ========================================
 # Don't save duplicate commands
 export HISTCONTROL=erasedups
 # Increase history size
@@ -19,9 +16,6 @@ shopt -s histappend
 bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
 
-# ========================================
-# ALIASES
-# ========================================
 # Make 'ls' show hidden files (-A), use list format (-l), human-readable sizes (-h), and colors
 alias ls='ls -Alh --color=auto'
 # Add color to grep output
@@ -31,21 +25,12 @@ alias grep='grep --color=auto'
 alias pacu='sudo pacman -Syu'  # Update system (Upgrade)
 alias paci='sudo pacman -S'    # Install a package
 alias pacr='sudo pacman -Rns'  # Remove a package and its dependencies
-alias pacs='pacman -Ss'        # Search for a package
 
-# ========================================
-# NAVIGATION
-# ========================================
-# Automatically cd into a directory if a command is not found
-shopt -s autocd
 # Shortcuts for moving up directories
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
-# ========================================
-# PROMPT CONFIGURATION
-# ========================================
 # Function to get the current git branch name
 parse_git_branch() {
   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
@@ -53,7 +38,5 @@ parse_git_branch() {
 # Clean prompt with git integration: [user@hostname directory](branch)$
 PS1='[\u@\h \W]$(parse_git_branch)\$ '
 
-# ========================================
-# PATH CONFIGURATION
-# ========================================
+# Path configuration
 export PATH=~/.npm-global/bin:$PATH

@@ -103,3 +103,10 @@ def find_optimal_batch_size(model, sample_input, max_batch=128):
 - **EDIT > CREATE** - Never create files unless necessary
 - **NO DOCS** unless explicitly requested
 - **LOCAL DEV** - All work happens on this single machine
+
+## 🛠️ CODE QUALITY TOOLS
+- When in the Hybrid Chess AI project directory, use the following commands for code quality checks:
+  - `basedpyright .` - Static type checking for Python
+  - `ruff check .` - Linting and style checks
+  - `ruff format .` - Automatic code formatting
+  - Recommended: Run these before committing code to ensure high-quality standards

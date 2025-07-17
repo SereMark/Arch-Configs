@@ -40,7 +40,7 @@ vim.opt.termguicolors = true
 vim.opt.mouse = 'a'
 vim.opt.undofile = true
 vim.opt.confirm = true
-vim.opt.updatetime = 250
+vim.opt.updatetime = 500  -- Debounce diagnostics for smoother editing
 vim.opt.timeoutlen = 300
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
@@ -96,8 +96,9 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -- PYTHON ENVIRONMENT DETECTION
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Simple memoization cache
+-- Python path cache with TTL (5 minutes)
 local python_path_cache = {}
+local cache_timestamp = {}
 
 local function find_project_root(start_path)
   local root_markers = { '.git', 'pyproject.toml', 'requirements.txt', 'setup.py', 'Pipfile' }
@@ -120,11 +121,13 @@ local function extract_venv_name(python_path)
   return python_path:match('/([^/]+)/bin/python$') or 'sys'
 end
 
-function get_python_path(buffer_path)
+local function get_python_path(buffer_path)
   local start_dir = buffer_path and vim.fn.fnamemodify(buffer_path, ':h') or vim.fn.getcwd()
   
-  -- Check cache first
-  if python_path_cache[start_dir] then
+  -- Check cache with TTL (5 minutes)
+  local now = os.time()
+  if python_path_cache[start_dir] and cache_timestamp[start_dir] and 
+     (now - cache_timestamp[start_dir]) < 300 then
     return python_path_cache[start_dir]
   end
   
@@ -174,15 +177,16 @@ function get_python_path(buffer_path)
     python_path = vim.fn.exepath('python3') or vim.fn.exepath('python') or 'python3'
   end
   
-  -- Cache the result
+  -- Cache the result with timestamp
   python_path_cache[start_dir] = python_path
+  cache_timestamp[start_dir] = os.time()
   return python_path
 end
 
 -- Dynamic Python environment detection and LSP reconfiguration
 local current_python_path = nil
 
-function update_python_lsp(buffer_path)
+local function update_python_lsp(buffer_path)
   local new_python_path = get_python_path(buffer_path)
   
   if current_python_path ~= new_python_path then
@@ -373,27 +377,49 @@ lazy.setup({
   {
     'neovim/nvim-lspconfig',
     event = { 'BufReadPost', 'BufNewFile' },
-    ft = { 'python' }, -- Additional trigger for Python files
     dependencies = {
       'saghen/blink.cmp',
     },
     config = function()
-      -- Diagnostics
+      -- Smart diagnostic configuration
       vim.diagnostic.config({
-        virtual_text = { spacing = 2, prefix = '●' },
+        virtual_text = {
+          spacing = 2,
+          severity = { min = vim.diagnostic.severity.WARN },
+          format = function(diagnostic)
+            local msg = diagnostic.message
+            -- Smart filtering for Python
+            if vim.bo.filetype == 'python' then
+              if msg:match('may be undefined') or 
+                 (msg:match('Missing.*import') and vim.fn.expand('%:t'):match('^test_')) then
+                return nil
+              end
+            end
+            -- Truncate long messages
+            return #msg > 60 and msg:sub(1, 57) .. '...' or msg
+          end,
+        },
         signs = {
           text = {
-            [vim.diagnostic.severity.ERROR] = '●',
-            [vim.diagnostic.severity.WARN] = '●',
-            [vim.diagnostic.severity.INFO] = '●',
-            [vim.diagnostic.severity.HINT] = '●',
+            [vim.diagnostic.severity.ERROR] = 'E',
+            [vim.diagnostic.severity.WARN] = 'W',
+            [vim.diagnostic.severity.INFO] = 'I',
+            [vim.diagnostic.severity.HINT] = 'H',
           },
         },
         float = { border = 'rounded' },
         update_in_insert = false,
         severity_sort = true,
+        underline = {
+          severity = { min = vim.diagnostic.severity.WARN },
+        },
       })
 
+      -- Optimize hover handler
+      vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
+        vim.lsp.handlers.hover, { border = 'rounded' }
+      )
+      
       -- LSP keymaps
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
@@ -413,16 +439,23 @@ lazy.setup({
         end,
       })
 
-      -- Manual LSP management (no Mason) - Ruff + basedpyright installed manually
-
-      -- Modern Python LSP setup: Ruff (primary) + Manual basedpyright (semantic tokens)
+      -- Python LSP setup: Ruff + Basedpyright
       local lspconfig = require('lspconfig')
       local blink = require('blink.cmp')
       
       local capabilities = blink.get_lsp_capabilities()
       
+      -- Performance optimizations for capabilities
+      capabilities.workspace = capabilities.workspace or {}
+      capabilities.workspace.didChangeWatchedFiles = {
+        dynamicRegistration = false,  -- Reduce file watching overhead
+      }
+      
       -- Ruff LSP (primary) - handles linting, formatting, imports  
-      local ruff_cmd = vim.fn.expand('~/.local/bin/ruff')
+      local ruff_cmd = vim.fn.exepath('ruff')
+      if ruff_cmd == '' then
+        ruff_cmd = vim.fn.expand('~/.local/bin/ruff')
+      end
       if vim.fn.executable(ruff_cmd) == 1 then
         lspconfig.ruff.setup({
           cmd = { ruff_cmd, 'server' },
@@ -431,20 +464,34 @@ lazy.setup({
             settings = {
               organizeImports = true,
               fixAll = true,
+              lint = {
+                -- Intelligent linting
+                run = "onSave",  -- Don't lint on every keystroke
+              },
             },
           },
+          on_attach = function(client, bufnr)
+            -- Disable hover in favor of basedpyright
+            client.server_capabilities.hoverProvider = false
+          end,
         })
       else
-        vim.notify('Ruff LSP not found at: ' .. ruff_cmd, vim.log.levels.WARN)
+        vim.notify('Ruff LSP not found. Install: pip install ruff', vim.log.levels.INFO)
       end
       
       -- Basedpyright setup with dynamic Python path
-      local basedpyright_cmd = vim.fn.expand('~/.local/bin/basedpyright-langserver')
+      local basedpyright_cmd = vim.fn.exepath('basedpyright-langserver')
+      if basedpyright_cmd == '' then
+        basedpyright_cmd = vim.fn.expand('~/.local/bin/basedpyright-langserver')
+      end
       if vim.fn.executable(basedpyright_cmd) == 1 then
         lspconfig.basedpyright.setup({
           cmd = { basedpyright_cmd, '--stdio' },
           capabilities = capabilities,
           single_file_support = true,
+          flags = {
+            debounce_text_changes = 500,  -- Debounce for performance
+          },
           before_init = function(_, config)
             config.settings = config.settings or {}
             config.settings.python = config.settings.python or {}
@@ -473,18 +520,50 @@ lazy.setup({
                 autoImportCompletions = true,
                 typeCheckingMode = 'basic',
                 diagnosticSeverityOverrides = {
-                  -- Disable diagnostics that Ruff handles
+                  -- Disable diagnostics that Ruff handles better
                   reportUnusedImport = 'none',
                   reportUnusedVariable = 'none',
                   reportUnusedFunction = 'none',
                   reportUnusedClass = 'none',
-                  -- Reduce type checking severity
+                  reportUndefinedVariable = 'none',  -- Ruff handles this
+                  
+                  -- Type checking intelligence
                   reportMissingTypeStubs = 'none',
                   reportMissingModuleSource = 'none',
-                  reportGeneralTypeIssues = 'warning',
-                  reportOptionalMemberAccess = 'warning',
-                  reportAttributeAccessIssue = 'warning',
                   reportUnknownMemberType = 'none',
+                  reportUnknownArgumentType = 'none',
+                  reportUnknownParameterType = 'none',
+                  reportUnknownVariableType = 'none',
+                  reportUnknownLambdaType = 'none',
+                  reportPrivateUsage = 'none',
+                  
+                  -- Reduce noise for dynamic Python
+                  reportGeneralTypeIssues = 'information',
+                  reportOptionalMemberAccess = 'information',
+                  reportOptionalSubscript = 'information',
+                  reportOptionalOperand = 'information',
+                  reportAttributeAccessIssue = 'information',
+                  
+                  -- Import resolution intelligence
+                  reportMissingImports = 'warning',  -- Not error
+                  reportMissingTypeArg = 'none',
+                  
+                  -- Common false positives
+                  reportIncompatibleMethodOverride = 'information',
+                  reportIncompatibleVariableOverride = 'information',
+                  reportImportCycles = 'information',
+                  reportUnnecessaryIsInstance = 'none',
+                  reportUnnecessaryCast = 'none',
+                  reportUnnecessaryComparison = 'none',
+                  reportUnnecessaryTypeIgnoreComment = 'none',
+                  
+                  -- Magic method and metaclass intelligence
+                  reportFunctionMemberAccess = 'none',
+                  reportPropertyTypeMismatch = 'information',
+                  
+                  -- Test file intelligence (handled dynamically)
+                  reportUnusedExpression = 'information',
+                  reportPrivateImportUsage = 'none',
                 },
               },
             },
@@ -498,11 +577,9 @@ lazy.setup({
           },
         })
       else
-        vim.notify('Basedpyright LSP not found at: ' .. basedpyright_cmd, vim.log.levels.WARN)
+        vim.notify('Basedpyright LSP not found. Install: pip install basedpyright', vim.log.levels.INFO)
       end
       
-      -- Manual LSP management for minimal setup
-      -- Ruff handles formatting and linting
     end,
   },
 
@@ -545,36 +622,67 @@ lazy.setup({
     config = function()
       local tokyonight = require('tokyonight')
       
-      -- Essential syntax highlighting overrides
       local function setup_syntax_highlighting(highlights, colors)
         -- Core Python highlights
-        highlights['@variable'] = { fg = colors.soft_purple }
-        highlights['@variable.parameter'] = { fg = colors.lavender }
-        highlights['@variable.builtin'] = { fg = colors.mint_green, bold = true }
-        highlights['@function'] = { fg = colors.calm_blue, bold = true }
-        highlights['@function.builtin'] = { fg = colors.mint_green, bold = true }
-        highlights['@function.builtin.python'] = { fg = colors.mint_green, bold = true }
-        highlights['@type'] = { fg = colors.amethyst }
-        highlights['@type.builtin'] = { fg = colors.warm_yellow, bold = true }
-        highlights['@constructor'] = { fg = colors.coral, bold = true }
+        highlights['@variable'] = { fg = colors.vibrant_purple }
+        highlights['@variable.parameter'] = { fg = colors.light_purple }
+        highlights['@variable.builtin'] = { fg = colors.lime_green, bold = true }
+        highlights['@function'] = { fg = colors.electric_blue, bold = true }
+        highlights['@function.builtin'] = { fg = colors.lime_green, bold = true }
+        highlights['@function.builtin.python'] = { fg = colors.lime_green, bold = true }
+        highlights['@function.call'] = { fg = colors.electric_blue }
+        highlights['@type'] = { fg = colors.bright_violet }
+        highlights['@type.builtin'] = { fg = colors.golden_yellow, bold = true }
+        highlights['@constructor'] = { fg = colors.hot_pink, bold = true }
         highlights['@property'] = { fg = colors.cyan }
-        highlights['@constant'] = { fg = colors.orange, bold = true }
-        highlights['@string'] = { fg = colors.sage_green }
-        highlights['@number'] = { fg = colors.orange }
-        highlights['@boolean'] = { fg = colors.orange }
-        highlights['@keyword'] = { fg = colors.warm_yellow, italic = true }
-        highlights['@keyword.exception'] = { fg = colors.coral, italic = true }
-        highlights['@operator'] = { fg = colors.warm_yellow }
-        highlights['@comment'] = { fg = colors.slate_gray, italic = true }
-        highlights['@module'] = { fg = colors.cyan }
+        highlights['@constant'] = { fg = colors.vivid_orange, bold = true }
+        highlights['@constant.builtin'] = { fg = colors.vivid_orange, bold = true }
+        highlights['@string'] = { fg = colors.neon_green }
+        highlights['@string.documentation'] = { fg = colors.docstring_green, italic = true }
+        highlights['@string.escape'] = { fg = colors.vivid_orange, bold = true }
+        highlights['@string.special'] = { fg = colors.decorator_cyan }
+        highlights['@number'] = { fg = colors.vivid_orange }
+        highlights['@boolean'] = { fg = colors.vivid_orange, bold = true }
+        highlights['@keyword'] = { fg = colors.golden_yellow, italic = true }
+        highlights['@keyword.function'] = { fg = colors.golden_yellow, bold = true, italic = true }
+        highlights['@keyword.exception'] = { fg = colors.hot_pink, italic = true }
+        highlights['@keyword.return'] = { fg = colors.golden_yellow, bold = true }
+        highlights['@keyword.operator'] = { fg = colors.golden_yellow }
+        highlights['@operator'] = { fg = colors.golden_yellow }
+        highlights['@comment'] = { fg = colors.readable_gray, italic = true }
+        highlights['@module'] = { fg = colors.cyan, bold = true }
         highlights['@field'] = { fg = colors.cyan }
+        highlights['@punctuation.bracket'] = { fg = colors.light_purple }
+        highlights['@punctuation.delimiter'] = { fg = colors.light_purple }
         
-        -- LSP semantic tokens (essential only)
-        highlights['@lsp.type.class'] = { fg = colors.coral, bold = true }
-        highlights['@lsp.type.function'] = { fg = colors.calm_blue, bold = true }
-        highlights['@lsp.type.variable'] = { fg = colors.soft_purple }
-        highlights['@lsp.type.parameter'] = { fg = colors.lavender }
-        highlights['@lsp.mod.defaultLibrary'] = { fg = colors.mint_green, bold = true }
+        -- Python-specific highlights
+        highlights['@attribute'] = { fg = colors.decorator_cyan, italic = true }
+        highlights['@function.method'] = { fg = colors.electric_blue, bold = true }
+        highlights['@function.macro'] = { fg = colors.magic_yellow, bold = true }
+        highlights['@variable.member'] = { fg = colors.cyan }
+        highlights['@keyword.import'] = { fg = colors.hot_pink, italic = true }
+        highlights['@type.qualifier'] = { fg = colors.bright_violet, italic = true }
+        
+        -- LSP semantic tokens
+        highlights['@lsp.type.class'] = { fg = colors.hot_pink, bold = true }
+        highlights['@lsp.type.decorator'] = { fg = colors.decorator_cyan, italic = true }
+        highlights['@lsp.type.function'] = { fg = colors.electric_blue, bold = true }
+        highlights['@lsp.type.method'] = { fg = colors.electric_blue, bold = true }
+        highlights['@lsp.type.variable'] = { fg = colors.vibrant_purple }
+        highlights['@lsp.type.parameter'] = { fg = colors.light_purple }
+        highlights['@lsp.type.property'] = { fg = colors.cyan }
+        highlights['@lsp.type.enumMember'] = { fg = colors.vivid_orange, bold = true }
+        highlights['@lsp.mod.defaultLibrary'] = { fg = colors.lime_green, bold = true }
+        highlights['@lsp.mod.builtin'] = { fg = colors.lime_green, bold = true }
+        highlights['@lsp.typemod.function.defaultLibrary'] = { fg = colors.lime_green, bold = true }
+        highlights['@lsp.typemod.variable.defaultLibrary'] = { fg = colors.lime_green, bold = true }
+        highlights['@lsp.typemod.class.defaultLibrary'] = { fg = colors.lime_green, bold = true }
+        
+        -- Diagnostic highlights
+        highlights['DiagnosticError'] = { fg = colors.error_red, bold = true }
+        highlights['DiagnosticWarn'] = { fg = colors.golden_yellow }
+        highlights['DiagnosticInfo'] = { fg = colors.cyan }
+        highlights['DiagnosticHint'] = { fg = colors.readable_gray }
       end
       
       tokyonight.setup({
@@ -586,18 +694,22 @@ lazy.setup({
           functions = { bold = true },
         },
         on_colors = function(colors)
-          -- TASTEFUL TOKYONIGHT PROFESSIONAL PALETTE (CONSOLIDATED)
-          colors.soft_purple = '#bb9af7'     -- Variables (elegant, sophisticated)
-          colors.calm_blue = '#7aa2f7'       -- Functions (professional, readable)
-          colors.cyan = '#7dcfff'            -- Properties & modules (refined, soft)
-          colors.warm_yellow = '#e0af68'     -- Keywords (tasteful, warm)
-          colors.coral = '#f7768e'           -- Classes & errors (refined, pleasant)
-          colors.sage_green = '#9ece6a'      -- Strings (natural, easy)
-          colors.orange = '#ff9e64'          -- Numbers & special (warm, gentle)
-          colors.slate_gray = '#565f89'      -- Comments (subtle, readable)
-          colors.lavender = '#c0caf5'        -- Parameters (soft, distinctive)
-          colors.mint_green = '#73daca'      -- Built-ins (fresh, professional)
-          colors.amethyst = '#9d7cd8'        -- Types (rich, refined)
+          -- VIBRANT PYTHON PALETTE
+          colors.vibrant_purple = '#d4a5ff'   -- Variables
+          colors.electric_blue = '#61b3ff'    -- Functions
+          colors.cyan = '#00e5ff'             -- Properties & modules
+          colors.golden_yellow = '#ffd866'    -- Keywords
+          colors.hot_pink = '#ff6b9d'         -- Classes
+          colors.neon_green = '#7ed321'       -- Strings
+          colors.vivid_orange = '#ff8c42'     -- Numbers
+          colors.readable_gray = '#6272a4'    -- Comments
+          colors.light_purple = '#e4c9ff'     -- Parameters
+          colors.lime_green = '#50fa7b'       -- Built-ins
+          colors.bright_violet = '#bd93f9'    -- Types
+          colors.decorator_cyan = '#8be9fd'   -- Decorators
+          colors.docstring_green = '#95d16a'  -- Docstrings
+          colors.magic_yellow = '#fffa87'     -- Magic methods
+          colors.error_red = '#ff5555'        -- Errors
         end,
         on_highlights = setup_syntax_highlighting,
       })
@@ -615,15 +727,6 @@ lazy.setup({
       local statusline = require('mini.statusline')
       statusline.setup({ use_icons = false })
       
-      -- Show Python environment in statusline
-      statusline.section_filename = function()
-        local buffer_path = vim.api.nvim_buf_get_name(0)
-        if buffer_path ~= '' and buffer_path:match('%.py$') then
-          local venv_name = extract_venv_name(get_python_path(buffer_path))
-          return '(' .. venv_name .. ') %f%m%r'
-        end
-        return '%f%m%r'
-      end
       
       -- Indent guides
       local indentscope = require('mini.indentscope')
