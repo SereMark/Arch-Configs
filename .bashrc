@@ -45,3 +45,4 @@ parse_git_branch() {
 # Clean prompt with git integration: [user@hostname directory](branch)$
 PS1='[\u@\h \W]$(parse_git_branch)\$ '
 export PATH=~/.npm-global/bin:$PATH
+export PATH=~/.npm-global/bin:$PATH
