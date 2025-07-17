@@ -90,17 +90,5 @@ function M.setup()
   M.setup_clipboard()
 end
 
----Get current configuration summary for debugging
----@return table config Current configuration state
-function M.get_config_summary()
-  return {
-    leader = vim.g.mapleader,
-    has_nerd_font = vim.g.have_nerd_font,
-    termguicolors = vim.opt.termguicolors:get(),
-    updatetime = vim.opt.updatetime:get(),
-    timeoutlen = vim.opt.timeoutlen:get(),
-    clipboard = vim.opt.clipboard:get(),
-  }
-end
 
 return M

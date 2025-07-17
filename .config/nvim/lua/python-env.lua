@@ -252,33 +252,5 @@ function M.setup_python_buffer(buf)
   end, 'Generate docstring')
 end
 
----Clear Python path cache (useful for testing or when environments change)
-function M.clear_cache()
-  python_path_cache = {}
-  cache_timestamp = {}
-  current_python_path = nil
-end
-
----Get cache statistics for debugging
----@return table stats Cache usage statistics
-function M.get_cache_stats()
-  local total_entries = 0
-  local valid_entries = 0
-  local now = os.time()
-  
-  for dir, timestamp in pairs(cache_timestamp) do
-    total_entries = total_entries + 1
-    if (now - timestamp) < CONFIG.cache_ttl then
-      valid_entries = valid_entries + 1
-    end
-  end
-  
-  return {
-    total_entries = total_entries,
-    valid_entries = valid_entries,
-    hit_rate = total_entries > 0 and (valid_entries / total_entries) * 100 or 0,
-    current_python = current_python_path,
-  }
-end
 
 return M

@@ -151,7 +151,7 @@ local function setup_basedpyright_lsp(capabilities)
     capabilities = capabilities,
     single_file_support = true,
     flags = {
-      debounce_text_changes = 500,  -- Debounce for performance
+      debounce_text_changes = 750,  -- Optimized debounce for performance
     },
     before_init = function(_, config)
       -- Initialize settings structure
@@ -187,13 +187,6 @@ local function setup_basedpyright_lsp(capabilities)
           -- All diagnostic settings inherited from pyrightconfig.json
         },
       },
-      python = {
-        analysis = {
-          autoSearchPaths = true,
-          diagnosticMode = 'workspace',
-          useLibraryCodeForTypes = true,
-        }
-      }
     },
   })
   
@@ -216,29 +209,5 @@ function M.setup()
   setup_basedpyright_lsp(capabilities)
 end
 
----Get LSP status for debugging
----@return table status Current LSP status
-function M.get_status()
-  local clients = vim.lsp.get_clients()
-  local status = {
-    active_clients = {},
-    python_path = nil,
-  }
-  
-  for _, client in pairs(clients) do
-    table.insert(status.active_clients, {
-      name = client.name,
-      root_dir = client.config.root_dir,
-      capabilities = client.server_capabilities,
-    })
-    
-    -- Get Python path from basedpyright
-    if client.name == 'basedpyright' and client.config.settings.python then
-      status.python_path = client.config.settings.python.pythonPath
-    end
-  end
-  
-  return status
-end
 
 return M

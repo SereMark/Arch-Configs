@@ -125,21 +125,92 @@ require('lazy').setup({
     },
   },
 
-  -- Professional colorscheme
+  -- Professional colorscheme with optimal integrations
   {
-    'folke/tokyonight.nvim',
+    'catppuccin/nvim',
+    name = 'catppuccin',
     lazy = false,
     priority = 1000,
     config = function()
-      local colors_module = require('colors')
-      require('tokyonight').setup({
-        style = 'night',
-        terminal_colors = true,
-        styles = { comments = { italic = true }, keywords = { italic = true }, functions = { bold = true } },
-        on_colors = colors_module.setup_colors,
-        on_highlights = colors_module.setup_syntax_highlighting,
+      require('catppuccin').setup({
+        flavour = 'mocha',
+        transparent_background = false,
+        show_end_of_buffer = false,
+        term_colors = true,
+        compile_path = vim.fn.stdpath('cache') .. '/catppuccin',
+        styles = {
+          comments = { 'italic' },
+          conditionals = { 'italic' },
+          functions = { 'bold' },
+          keywords = { 'italic' },
+          strings = {},
+          variables = {},
+          numbers = {},
+          booleans = { 'bold' },
+          properties = {},
+          types = { 'italic' },
+        },
+        custom_highlights = function(colors)
+          return {
+            -- Python-specific enhancements
+            ['@string.documentation.python'] = { fg = colors.green, style = { 'italic' } },
+            ['@variable.parameter.python'] = { fg = colors.peach },
+            ['@function.builtin.python'] = { fg = colors.sky, style = { 'bold' } },
+            ['@keyword.import.python'] = { fg = colors.mauve, style = { 'italic' } },
+            ['@type.builtin.python'] = { fg = colors.yellow, style = { 'italic' } },
+            
+            -- Enhanced LSP semantic tokens
+            ['@lsp.type.class.python'] = { fg = colors.yellow },
+            ['@lsp.type.function.python'] = { fg = colors.blue, style = { 'bold' } },
+            ['@lsp.type.method.python'] = { fg = colors.blue },
+            ['@lsp.type.variable.python'] = { fg = colors.text },
+            ['@lsp.type.parameter.python'] = { fg = colors.peach },
+            ['@lsp.mod.readonly.python'] = { fg = colors.lavender },
+            
+            -- Better diagnostic styling
+            DiagnosticVirtualTextError = { bg = colors.none, fg = colors.red },
+            DiagnosticVirtualTextWarn = { bg = colors.none, fg = colors.yellow },
+            DiagnosticVirtualTextInfo = { bg = colors.none, fg = colors.sky },
+            DiagnosticVirtualTextHint = { bg = colors.none, fg = colors.teal },
+          }
+        end,
+        integrations = {
+          treesitter = true,
+          semantic_tokens = true,
+          telescope = { 
+            enabled = true,
+            style = 'nvchad',
+          },
+          gitsigns = true,
+          mini = {
+            enabled = true,
+            indentscope_color = 'lavender',
+          },
+          blink_cmp = true,
+          native_lsp = {
+            enabled = true,
+            virtual_text = {
+              errors = { 'italic' },
+              hints = { 'italic' },
+              warnings = { 'italic' },
+              information = { 'italic' },
+            },
+            underlines = {
+              errors = { 'undercurl' },
+              hints = { 'underdotted' },
+              warnings = { 'undercurl' },
+              information = { 'underdotted' },
+            },
+            inlay_hints = {
+              background = true,
+            },
+          },
+        },
       })
-      vim.cmd.colorscheme('tokyonight')
+      
+      -- Compile for performance
+      require('catppuccin').compile()
+      vim.cmd.colorscheme('catppuccin')
     end,
   },
 
@@ -158,7 +229,7 @@ require('lazy').setup({
     end,
   },
 
-  -- Treesitter
+  -- Treesitter with semantic highlighting integration
   {
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -166,21 +237,51 @@ require('lazy').setup({
     dependencies = { 'nvim-treesitter/nvim-treesitter-textobjects' },
     config = function()
       require('nvim-treesitter.configs').setup({
-        ensure_installed = { 'python', 'lua', 'vim', 'vimdoc' },
-        highlight = { enable = true },
+        ensure_installed = { 'python', 'lua', 'vim', 'vimdoc', 'yaml', 'toml', 'json' },
+        highlight = { 
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
         indent = { enable = true },
         auto_install = true,
         textobjects = {
           select = {
-            enable = true, lookahead = true,
-            keymaps = { ['af'] = '@function.outer', ['if'] = '@function.inner', ['ac'] = '@class.outer', ['ic'] = '@class.inner' },
+            enable = true, 
+            lookahead = true,
+            keymaps = { 
+              ['af'] = '@function.outer', 
+              ['if'] = '@function.inner', 
+              ['ac'] = '@class.outer', 
+              ['ic'] = '@class.inner',
+              ['as'] = '@statement.outer',
+              ['is'] = '@statement.inner',
+              ['ad'] = '@comment.outer',
+              ['id'] = '@comment.inner',
+            },
           },
           move = {
-            enable = true, set_jumps = true,
-            goto_next_start = { [']f'] = '@function.outer', [']c'] = '@class.outer' },
-            goto_next_end = { [']F'] = '@function.outer', [']C'] = '@class.outer' },
-            goto_previous_start = { ['[f'] = '@function.outer', ['[c'] = '@class.outer' },
-            goto_previous_end = { ['[F'] = '@function.outer', ['[C'] = '@class.outer' },
+            enable = true, 
+            set_jumps = true,
+            goto_next_start = { 
+              [']f'] = '@function.outer', 
+              [']c'] = '@class.outer',
+              [']s'] = '@statement.outer',
+            },
+            goto_next_end = { 
+              [']F'] = '@function.outer', 
+              [']C'] = '@class.outer',
+              [']S'] = '@statement.outer',
+            },
+            goto_previous_start = { 
+              ['[f'] = '@function.outer', 
+              ['[c'] = '@class.outer',
+              ['[s'] = '@statement.outer',
+            },
+            goto_previous_end = { 
+              ['[F'] = '@function.outer', 
+              ['[C'] = '@class.outer',
+              ['[S'] = '@statement.outer',
+            },
           },
         },
       })
@@ -193,6 +294,14 @@ require('lazy').setup({
       plugin = '🔌', runtime = '💻', require = '🌙', source = '📄', start = '🚀', task = '📌', lazy = '💤 ',
     },
     border = 'rounded',
+  },
+  performance = {
+    cache = { enabled = true },
+    rtp = {
+      disabled_plugins = {
+        'gzip', 'matchit', 'tarPlugin', 'tohtml', 'tutor', 'zipPlugin',
+      },
+    },
   },
   checker = { enabled = false },
   change_detection = { notify = false },
