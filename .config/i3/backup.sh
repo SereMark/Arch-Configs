@@ -7,7 +7,7 @@ trap 'rm -rf "$WORK_DIR"' EXIT
 
 while ! ping -c 1 -W 1 8.8.8.8 &>/dev/null; do sleep 5; done
 
-gh repo clone SereMark/Arch-Configs "$WORK_DIR" -- --depth 1 &>/dev/null || exit 1
+git clone https://github.com/SereMark/Arch-Configs.git "$WORK_DIR" --depth 1 &>/dev/null || exit 1
 
 cd "$WORK_DIR" || exit
 rm -rf .config .bashrc CLAUDE.md
