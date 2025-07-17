@@ -10,12 +10,14 @@ while ! ping -c 1 -W 1 8.8.8.8 &>/dev/null; do sleep 5; done
 git clone https://github.com/SereMark/Arch-Configs.git "$WORK_DIR" --depth 1 &>/dev/null || exit 1
 
 cd "$WORK_DIR" || exit
-rm -rf .config .bashrc CLAUDE.md
+rm -rf .config .bashrc CLAUDE.md projects
 
 [ -d "$HOME/.config/i3" ] && mkdir -p .config && cp -r "$HOME/.config/i3" .config/
 [ -d "$HOME/.config/nvim" ] && mkdir -p .config && cp -r "$HOME/.config/nvim" .config/
 [ -f "$HOME/.bashrc" ] && cp "$HOME/.bashrc" .
 [ -f "$HOME/.claude/CLAUDE.md" ] && cp "$HOME/.claude/CLAUDE.md" .
+[ -f "$HOME/projects/pyproject.toml" ] && mkdir -p projects && cp "$HOME/projects/pyproject.toml" projects/
+[ -f "$HOME/projects/pyrightconfig.json" ] && mkdir -p projects && cp "$HOME/projects/pyrightconfig.json" projects/
 
 git add .
 if [[ -n $(git status --porcelain) ]]; then
