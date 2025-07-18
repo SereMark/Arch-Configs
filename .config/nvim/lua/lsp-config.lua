@@ -2,16 +2,16 @@
 ═══════════════════════════════════════════════════════════════════════════════
                            LSP CONFIGURATION
                            
-Optimized LSP setup for Python development with Ruff and Basedpyright.
-Eliminates redundancy, improves performance, and provides clean separation.
+Optimized LSP setup for ML/AI development with enhanced Ruff and Basedpyright.
+Perfectly balanced for Chess AI and scientific computing workflows.
 
 Features:
-- Ruff LSP for linting, formatting, and imports
-- Basedpyright for type checking and completions  
-- Dynamic Python path detection integration
+- Enhanced Ruff LSP with ML-specific rules (NPY, PERF, FURB, PTH, ASYNC)
+- Basedpyright with Union type handling and venv detection
+- Smart diagnostic filtering for ML development patterns
 - Performance-optimized capabilities
-- Smart diagnostic filtering
-- Consolidated keymaps
+- Dynamic Python path detection integration
+- Consolidated keymaps for AI development workflow
 ═══════════════════════════════════════════════════════════════════════════════
 --]]
 
@@ -184,7 +184,8 @@ local function setup_basedpyright_lsp(capabilities)
           useLibraryCodeForTypes = true,
           autoImportCompletions = true,
           typeCheckingMode = 'basic',
-          -- All diagnostic settings inherited from pyrightconfig.json
+          -- Enhanced diagnostic settings inherited from pyrightconfig.json
+          -- Optimized for ML/AI development with Union type handling
         },
       },
     },

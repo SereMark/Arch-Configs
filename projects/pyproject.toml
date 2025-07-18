@@ -11,7 +11,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-# Enable comprehensive rule set matching development needs
+# Enable comprehensive rule set for ML/AI development
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings  
@@ -25,28 +25,42 @@ select = [
     "PIE",  # flake8-pie
     "PL",   # pylint
     "RUF",  # ruff-specific rules
+    "NPY",  # numpy best practices
+    "PERF", # performance optimizations
+    "FURB", # refurb modernization
+    "PTH",  # pathlib usage
+    "ASYNC", # async/parallel patterns
 ]
 
-# Ignore rules that are too noisy for AI development
+# Ignore rules that are too noisy for ML/AI development
 ignore = [
     "E501",   # line too long (handled by formatter)
-    "PLR0913", # too many arguments
-    "PLR0912", # too many branches
-    "PLR0915", # too many statements
-    "PLR2004", # magic value used in comparison
+    "PLR0913", # too many arguments (common in ML functions)
+    "PLR0912", # too many branches (common in training logic)
+    "PLR0915", # too many statements (common in training loops)
+    "PLR0904", # too many public methods (common in ML classes)
+    "PLR0914", # too many local variables (common in training loops)
+    "PLR0917", # too many positional arguments (common in ML functions)
+    "PLR0911", # too many return statements (common in game logic)
+    "C901",    # complex functions (MCTS algorithms, chess logic)
+    "PLR2004", # magic value used in comparison (ML hyperparameters)
     "PLC0414", # useless import alias
     "SIM108",  # use ternary operator (sometimes less readable)
     "B008",    # do not perform function calls in argument defaults
     "N806",    # variable name should be lowercase (AI naming conventions)
     "UP007",   # use X | Y for type annotations (compatibility)
+    "PERF203", # try-except in loop (common in ML error handling)
+    "FURB105", # print-f-string (logging is preferred but not always)
 ]
 
 [tool.ruff.lint.isort]
-# Import organization matching nvim organizeImports=true
+# Import organization optimized for ML/AI development
 combine-as-imports = true
 force-wrap-aliases = true
 known-first-party = []
 split-on-trailing-comma = true
+known-third-party = ["numpy", "torch", "chess", "yaml"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.lint.pyupgrade]
 # Keep union style consistent with codebase

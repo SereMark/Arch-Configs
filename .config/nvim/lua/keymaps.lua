@@ -37,6 +37,21 @@ function M.setup_global_keymaps()
       or line:gsub('^(%s*)', '%1# ')
     vim.api.nvim_set_current_line(new_line)
   end, { desc = 'Toggle Python comment' })
+  
+  -- ML/AI development keymaps (using full paths for LSP alignment)
+  vim.keymap.set('n', '<leader>rf', function()
+    vim.cmd('silent! !/home/seremark/.local/ruff-venv/bin/ruff format %')
+    vim.cmd('edit!')
+  end, { desc = 'Ruff format current file' })
+  
+  vim.keymap.set('n', '<leader>rc', function()
+    vim.cmd('silent! !/home/seremark/.local/ruff-venv/bin/ruff check --fix %')
+    vim.cmd('edit!')
+  end, { desc = 'Ruff check and fix current file' })
+  
+  vim.keymap.set('n', '<leader>rt', function()
+    vim.cmd('silent! !/home/seremark/.local/basedpyright-venv/bin/basedpyright %')
+  end, { desc = 'Run basedpyright on current file' })
 end
 
 ---Setup telescope search keymaps
