@@ -2,6 +2,8 @@
   "include": [
     "."
   ],
+  "venvPath": "/home/seremark/projects/Hibrid-Chess-AI",
+  "venv": "venv",
   "exclude": [
     "**/venv",
     "**/.venv",
@@ -22,7 +24,7 @@
   "reportUnusedFunction": "none",
   "reportUnusedClass": "none",
   "reportUndefinedVariable": "none",
-  "reportMissingTypeStubs": "information",
+  "reportMissingTypeStubs": "none",
   "reportMissingModuleSource": "none",
   "reportUnknownMemberType": "information",
   "reportUnknownArgumentType": "none",

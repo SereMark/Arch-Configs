@@ -51,6 +51,7 @@ ignore = [
     "UP007",   # use X | Y for type annotations (compatibility)
     "PERF203", # try-except in loop (common in ML error handling)
     "FURB105", # print-f-string (logging is preferred but not always)
+    "NPY002",  # legacy numpy random (required for Numba JIT compatibility)
 ]
 
 [tool.ruff.lint.isort]

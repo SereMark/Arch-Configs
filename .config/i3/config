@@ -47,6 +47,12 @@ exec --no-startup-id sh -c "timeout 10s bash -c 'until ping -c 1 1.1.1.1 >/dev/n
 # Launch Firefox Browser
 bindsym $mod+b exec firefox
 
+# Launch Steam
+bindsym $mod+s exec steam
+
+# Take screenshot and copy to clipboard
+bindsym $mod+Shift+s exec "maim -s | xclip -selection clipboard -t image/png"
+
 # Terminal
 bindsym $mod+Return exec alacritty
 
