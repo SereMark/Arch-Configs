@@ -194,4 +194,4 @@ bindsym $mod+Ctrl+Right workspace next
 bindsym $mod+Ctrl+Left workspace prev
 
 # Run config backups in the background on startup.
-exec --no-startup-id "$HOME/.config/i3/backup.sh"
+exec --no-startup-id "sleep 10 && $HOME/.config/i3/backup.sh"
