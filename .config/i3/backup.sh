@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sleep 10
+
 gh auth status &>/dev/null || exit 1
 
 HASH_FILE="$HOME/.cache/backup_hash"
