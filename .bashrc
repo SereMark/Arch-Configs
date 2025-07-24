@@ -31,12 +31,33 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
-# Function to get the current git branch name
+# Function to get the current git branch name with status
 parse_git_branch() {
-  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+  local branch=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+  if [ -n "$branch" ]; then
+    local status=""
+    if ! git diff-index --quiet HEAD -- 2> /dev/null; then
+      status="*"
+    fi
+    echo " ($branch$status)"
+  fi
 }
 # Clean prompt with git integration: [user@hostname directory](branch)$
 PS1='[\u@\h \W]$(parse_git_branch)\$ '
+
+# Development workflow automation
+dev() {
+    source venv/bin/activate && \
+    /home/seremark/.local/ruff-venv/bin/ruff check . --fix && \
+    /home/seremark/.local/ruff-venv/bin/ruff format . && \
+    /home/seremark/.local/basedpyright-venv/bin/basedpyright . && \
+    nvidia-smi
+}
+
+# Quick navigation and tools
+alias proj='cd /home/seremark/projects/'
+alias rf='/home/seremark/.local/ruff-venv/bin/ruff check . --fix && /home/seremark/.local/ruff-venv/bin/ruff format .'
+alias rm='rm -i'
 
 # Path configuration
 export PATH=~/.npm-global/bin:$PATH

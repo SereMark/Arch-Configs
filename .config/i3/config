@@ -32,7 +32,7 @@ client.placeholder        $inactive-bg-color $inactive-bg-color $inactive-text-c
 client.background         $bg-color
 
 # Clean workflow enhancements
-focus_follows_mouse yes
+focus_follows_mouse no
 mouse_warping none
 workspace_auto_back_and_forth yes
 floating_modifier $mod
@@ -42,7 +42,7 @@ popup_during_fullscreen smart
 force_display_urgency_hint 1000 ms
 
 # Auto-start browser
-exec --no-startup-id sh -c "timeout 10s bash -c 'until ping -c 1 1.1.1.1 >/dev/null 2>&1; do sleep 1; done' && exec firefox"
+exec --no-startup-id firefox
 
 # Launch Firefox Browser
 bindsym $mod+b exec firefox
@@ -55,6 +55,7 @@ bindsym $mod+Shift+s exec "maim -s | xclip -selection clipboard -t image/png"
 
 # Terminal
 bindsym $mod+Return exec alacritty
+bindsym $mod+Shift+Return exec alacritty --class floating
 
 # Kill focused window
 bindsym $mod+Shift+q kill
@@ -134,17 +135,6 @@ bindsym $mod+Shift+8 move container to workspace $ws8
 bindsym $mod+Shift+9 move container to workspace $ws9
 bindsym $mod+Shift+0 move container to workspace $ws10
 
-# Move and follow to workspace
-bindsym $mod+Ctrl+1 move container to workspace $ws1; workspace $ws1
-bindsym $mod+Ctrl+2 move container to workspace $ws2; workspace $ws2
-bindsym $mod+Ctrl+3 move container to workspace $ws3; workspace $ws3
-bindsym $mod+Ctrl+4 move container to workspace $ws4; workspace $ws4
-bindsym $mod+Ctrl+5 move container to workspace $ws5; workspace $ws5
-bindsym $mod+Ctrl+6 move container to workspace $ws6; workspace $ws6
-bindsym $mod+Ctrl+7 move container to workspace $ws7; workspace $ws7
-bindsym $mod+Ctrl+8 move container to workspace $ws8; workspace $ws8
-bindsym $mod+Ctrl+9 move container to workspace $ws9; workspace $ws9
-bindsym $mod+Ctrl+0 move container to workspace $ws10; workspace $ws10
 
 # Reload/restart i3
 bindsym $mod+Shift+c reload
@@ -173,7 +163,7 @@ mode "resize" {
 
     # Super fast resize (Ctrl for 20px)
     bindsym Ctrl+j resize shrink width 20 px or 20 ppt
-    bindsym Ctrl+k resize grow height 10 px or 20 ppt
+    bindsym Ctrl+k resize grow height 20 px or 20 ppt
     bindsym Ctrl+l resize shrink height 20 px or 20 ppt
     bindsym Ctrl+semicolon resize grow width 20 px or 20 ppt
 
@@ -186,12 +176,10 @@ mode "resize" {
 # Smart borders - no borders when only one window
 smart_borders on
 
-# Enhanced window rules
-for_window [class=".*"] border pixel 2
-
 # Floating windows
 for_window [window_role="pop-up"] floating enable
 for_window [window_role="task_dialog"] floating enable
+for_window [class="floating"] floating enable
 
 # Scratchpad
 bindsym $mod+Shift+minus move scratchpad
