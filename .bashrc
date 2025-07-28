@@ -45,19 +45,5 @@ parse_git_branch() {
 # Clean prompt with git integration: [user@hostname directory](branch)$
 PS1='[\u@\h \W]$(parse_git_branch)\$ '
 
-# Development workflow automation
-dev() {
-    source venv/bin/activate && \
-    /home/seremark/.local/ruff-venv/bin/ruff check . --fix && \
-    /home/seremark/.local/ruff-venv/bin/ruff format . && \
-    /home/seremark/.local/basedpyright-venv/bin/basedpyright . && \
-    nvidia-smi
-}
-
-# Quick navigation and tools
-alias proj='cd /home/seremark/projects/'
-alias rf='/home/seremark/.local/ruff-venv/bin/ruff check . --fix && /home/seremark/.local/ruff-venv/bin/ruff format .'
-alias rm='rm -i'
-
 # Path configuration
 export PATH=~/.npm-global/bin:$PATH

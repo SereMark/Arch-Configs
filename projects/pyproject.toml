@@ -60,7 +60,7 @@ combine-as-imports = true
 force-wrap-aliases = true
 known-first-party = []
 split-on-trailing-comma = true
-known-third-party = ["numpy", "torch", "chess", "yaml"]
+known-third-party = ["numpy", "torch", "chess"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.lint.pyupgrade]

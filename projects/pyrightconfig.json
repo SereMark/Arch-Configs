@@ -2,8 +2,6 @@
   "include": [
     "."
   ],
-  "venvPath": "/home/seremark/projects/Hibrid-Chess-AI",
-  "venv": "venv",
   "exclude": [
     "**/venv",
     "**/.venv",
