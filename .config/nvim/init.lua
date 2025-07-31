@@ -34,6 +34,14 @@ vim.iter(plugins):each(function(repo)
 end)
 
 local fzf = require('fzf-lua')
+fzf.setup({
+  files = {
+    fd_opts = "--color=never --type f --hidden --follow --exclude .git --exclude build --exclude cmake-build-* --exclude _build --exclude out --exclude dist --exclude node_modules",
+  },
+  grep = {
+    rg_opts = "--column --line-number --no-heading --color=always --smart-case --max-columns=4096 -g '!build/' -g '!cmake-build-*/' -g '!_build/' -g '!out/' -g '!dist/' -g '!node_modules/' -e",
+  }
+})
 vim.keymap.set('n', '<leader>sf', fzf.files)
 vim.keymap.set('n', '<leader>sg', fzf.live_grep)
 vim.keymap.set('n', '<leader>sb', fzf.buffers)
@@ -165,7 +173,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
           usePlaceholders = true,
           completeUnimported = true,
           semanticHighlighting = true,
-          fallbackFlags = { '-std=c++23' }
+          fallbackFlags = { '-std=c++20' }
         },
         settings = {
           clangd = {
