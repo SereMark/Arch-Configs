@@ -23,38 +23,35 @@
 - **QUANTITATIVE ANALYSIS** - Back all technical claims with measurements
 
 ### Critical Anti-Patterns
-- Calling normal training behavior failures
+- Calling normal compiler behavior failures
 - "Find problems" mode when asked to analyze
-- Random ML behavior = broken system assumptions
+- Undefined behavior = broken system assumptions
 - Appearing thorough by inventing non-existent issues
 
-## ML/AI DOMAIN EXPERTISE
+## C++ DOMAIN EXPERTISE
 
 ### Complexity Thresholds
 - **Real bottlenecks only** - Not theoretical optimizations
-- **Industry ML standards** - GPU batching, tensor caching, O(n) improvements  
+- **Modern C++ standards** - RAII, move semantics, constexpr, O(n) improvements  
 - **>15% performance gain** - Complexity must deliver measurable impact
 - **Maintain readability** - Complex code stays well-structured
 
 ## WORKFLOW AUTOMATION
 
-### Session Startup Commands
-```bash
-source venv/bin/activate
-/home/seremark/.local/ruff-venv/bin/ruff check . --fix
-/home/seremark/.local/ruff-venv/bin/ruff format .
-/home/seremark/.local/basedpyright-venv/bin/basedpyright .
-nvidia-smi
-```
+### Available Commands
+- **C++ formatting**: `clang-format -i *.cpp *.hpp`
+- **C++ static analysis**: `clang-tidy *.cpp -- -std=c++20`
+- **Build system**: `cmake --build build` or `make -j$(nproc)`
 
 ### Tool Paths
-- **Ruff**: `/home/seremark/.local/ruff-venv/bin/ruff` (NPY, PERF, FURB, PTH, ASYNC)
-- **Pyright**: `/home/seremark/.local/basedpyright-venv/bin/basedpyright` (ML-optimized)
-- **Projects**: `/home/seremark/projects/` (pyproject.toml, pyrightconfig.json)
+- **Clangd**: `clangd` (C++ LSP - system installed)
+- **Clang-format**: `clang-format` (system installed)
+- **Clang-tidy**: `clang-tidy` (system installed)
+- **Projects**: `/home/seremark/projects/` (CMakeLists.txt, compile_commands.json)
 
 ## SYSTEM CONSTRAINTS
 
 ### Hardware Limits
 - **Memory**: 8GB VRAM maximum
-- **Architecture**: Modern Python only
+- **Architecture**: Modern C++ (C++20/23)
 - **Validation**: Early error detection, fail fast
