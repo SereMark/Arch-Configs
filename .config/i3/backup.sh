@@ -3,7 +3,7 @@
 gh auth status &>/dev/null || exit 1
 
 HASH_FILE="$HOME/.cache/backup_hash"
-CURRENT_HASH=$(find "$HOME/.config/i3" "$HOME/.config/nvim" "$HOME/.bashrc" "$HOME/.claude/CLAUDE.md" "$HOME/projects/pyproject.toml" "$HOME/projects/pyrightconfig.json" -type f -exec md5sum {} \; 2>/dev/null | sort | md5sum | cut -d' ' -f1)
+CURRENT_HASH=$(find "$HOME/.config/i3" "$HOME/.config/nvim" "$HOME/.bashrc" -type f -exec md5sum {} \; 2>/dev/null | sort | md5sum | cut -d' ' -f1)
 
 [ -f "$HASH_FILE" ] && [ "$(cat "$HASH_FILE" 2>/dev/null)" = "$CURRENT_HASH" ] && exit 0
 
@@ -29,19 +29,6 @@ if [ -d "$HOME/.config/nvim" ] && [ "$(ls -A "$HOME/.config/nvim" 2>/dev/null)" 
 fi
 
 [ -f "$HOME/.bashrc" ] && { rm -f .bashrc 2>/dev/null; cp "$HOME/.bashrc" . 2>/dev/null; }
-[ -f "$HOME/.claude/CLAUDE.md" ] && { rm -f CLAUDE.md 2>/dev/null; cp "$HOME/.claude/CLAUDE.md" . 2>/dev/null; }
-
-if [ -f "$HOME/projects/pyproject.toml" ]; then
-    mkdir -p projects
-    rm -f projects/pyproject.toml 2>/dev/null
-    cp "$HOME/projects/pyproject.toml" projects/ 2>/dev/null
-fi
-
-if [ -f "$HOME/projects/pyrightconfig.json" ]; then
-    mkdir -p projects  
-    rm -f projects/pyrightconfig.json 2>/dev/null
-    cp "$HOME/projects/pyrightconfig.json" projects/ 2>/dev/null
-fi
 
 git add . 2>/dev/null || exit 1
 if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
