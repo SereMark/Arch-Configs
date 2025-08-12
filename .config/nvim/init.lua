@@ -24,13 +24,7 @@ do local ok, fzf = pcall(require, 'fzf-lua'); if ok then
     local current_buffer = vim.api.nvim_get_current_buf()
     local buffer_name = vim.api.nvim_buf_get_name(current_buffer)
     local start_dir = (buffer_name ~= '' and vim.fs.dirname(buffer_name)) or vim.uv.cwd()
-    local markers = {
-      '.git', '.hg', '.svn',
-      'package.json', 'pnpm-workspace.yaml', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb',
-      'pyproject.toml', 'poetry.lock', 'requirements.txt',
-      'Cargo.toml', 'go.mod', 'composer.json', 'mix.exs',
-      'Makefile', 'CMakeLists.txt', '.root'
-    }
+    local markers = {'.git'}
     local found = vim.fs.find(markers, { path = start_dir, upward = true })[1]
     return found and vim.fs.dirname(found) or start_dir
   end

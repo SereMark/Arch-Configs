@@ -31,3 +31,4 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
