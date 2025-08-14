@@ -20,8 +20,9 @@ alias ....='cd ../../..'
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
+
 files2clip() {
-  find . -type d -name .git -prune -o -type f -print0 \
+  find . -type d \( -name '.git' -o -name 'out' -o -name 'build' -o -name 'venv' -o -name '__pycache__' \) -prune -o -type f -print0 \
   | sort -z \
   | while IFS= read -r -d '' f; do
       p=${f#./}
