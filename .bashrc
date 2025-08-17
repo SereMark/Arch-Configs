@@ -14,12 +14,11 @@ alias pacu='sudo pacman -Syu'
 alias paci='sudo pacman -S'
 alias pacr='sudo pacman -Rns'
 
-alias ..='cd ..'i
+alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
 
+export PATH="$HOME/.local/bin:$PATH"
 
 files2clip() {
   find . -type d \( -name '.git' -o -name 'out' -o -name 'build' -o -name 'venv' -o -name '__pycache__' \) -prune -o -type f -print0 \
@@ -27,7 +26,9 @@ files2clip() {
   | while IFS= read -r -d '' f; do
       p=${f#./}
       printf '%s:\n' "$p"
-      cat -- "$f"
+      if [ "$(basename -- "$p")" != "openings.txt" ]; then
+        cat -- "$f"
+      fi
       printf '\n\n'
     done \
   | xclip -selection clipboard
