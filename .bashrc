@@ -8,15 +8,9 @@ bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
 
 alias ls='ls -Alh --color=auto'
-alias grep='grep --color=auto'
-
 alias pacu='sudo pacman -Syu'
 alias paci='sudo pacman -S'
 alias pacr='sudo pacman -Rns'
-
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
 
 export PATH="$HOME/.local/bin:$PATH"
 
@@ -34,4 +28,13 @@ files2clip() {
   | xclip -selection clipboard
 }
 
-alias f2c='files2clip'
+gacp() {
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Not a git repository."; return 1
+  fi
+  if [ "$#" -eq 0 ]; then
+    echo 'Usage: gacp "commit message"'; return 1
+  fi
+
+  git add . && git commit -m "$*" && git push
+}
