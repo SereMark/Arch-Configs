@@ -15,18 +15,19 @@ alias pacr='sudo pacman -Rns'
 export PATH="$HOME/.local/bin:$PATH"
 
 files2clip() {
-  find . -type d \( -name '.git' -o -name 'out' -o -name 'build' -o -name 'venv' -o -name '__pycache__' \) -prune -o -type f -print0 \
+  find . \
+    -type d \( -name .git -o -name out -o -name build -o -name venv -o -name __pycache__ \) -prune -o \
+    -type f ! -name '*openings.txt' ! -name 'log.txt' -print0 \
   | sort -z \
   | while IFS= read -r -d '' f; do
       p=${f#./}
       printf '%s:\n' "$p"
-      if [ "$(basename -- "$p")" != "openings.txt" ]; then
-        cat -- "$f"
-      fi
+      cat -- "$f"
       printf '\n\n'
     done \
   | xclip -selection clipboard
 }
+
 
 gacp() {
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
