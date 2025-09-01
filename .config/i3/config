@@ -50,9 +50,6 @@ bindsym $mod+b exec firefox
 # Launch Steam
 bindsym $mod+s exec steam
 
-# Launch qBittorrent
-bindsym $mod+q exec qbittorrent
-
 # Take screenshot and copy to clipboard
 bindsym $mod+Shift+s exec "maim -s | xclip -selection clipboard -t image/png"
 
