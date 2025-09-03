@@ -60,9 +60,6 @@ bindsym $mod+Shift+Return exec alacritty --class floating
 # Kill focused window
 bindsym $mod+Shift+q kill
 
-# CODING MODE - Sets up development environment
-bindsym $mod+c exec --no-startup-id ~/.config/i3/coding-mode.sh
-
 bindsym XF86AudioRaiseVolume exec --no-startup-id wpctl set-volume @DEFAULT_SINK@ 5%+
 bindsym XF86AudioLowerVolume exec --no-startup-id wpctl set-volume @DEFAULT_SINK@ 5%-
 bindsym XF86AudioMute exec --no-startup-id wpctl set-mute @DEFAULT_SINK@ toggle
@@ -193,6 +190,3 @@ bindsym $mod+Shift+Tab workspace prev
 # Quick workspace switching
 bindsym $mod+Ctrl+Right workspace next
 bindsym $mod+Ctrl+Left workspace prev
-
-# Run config backups in the background on startup.
-exec --no-startup-id "sleep 10 && $HOME/.config/i3/backup.sh"
